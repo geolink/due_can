@@ -31,21 +31,21 @@ class SSN65HVD234
 {
 private:
     /** Rs Pin on PIO */
-    uint32_t dwPin_Rs ;
+    int dwPin_Rs ;
 
     /** EN Pin on PIO */
-    uint32_t dwPin_EN ;
+    int dwPin_EN ;
 public:
-	uint32_t Init() ;
-	uint32_t SetRs(uint32_t Rs ) ;
-	uint32_t SetEN(uint32_t EN ) ;
+	uint32_t Init(int Rs = -1, int En = -1);
+	uint32_t SetRS(int RS ) ;
+	uint32_t SetEN(int EN ) ;
 
 	uint32_t Enable();
 	uint32_t Disable();
 
 	uint32_t EnableLowPower();
 	uint32_t DisableLowPower();
-	SSN65HVD234(uint32_t Rs, uint32_t En);
+	SSN65HVD234();
 };
 
 #endif /* _CAN_SN65HVD234_ */

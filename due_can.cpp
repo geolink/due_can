@@ -16,7 +16,6 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-
 #include "due_can.h"
 #include "sn65hvd234.h"
 
@@ -85,7 +84,7 @@ uint32_t CANRaw::set_baudrate(uint32_t ul_baudrate)
 	uint32_t ul_cur_mod;
 	can_bit_timing_t *p_bit_time;
 
-	static uint32_t ul_mck = SystemCoreClock;
+	static uint32_t ul_mck = SystemCoreClock / 1000;
 
 	/* Check whether the baudrate prescale will be greater than the max divide value. */
 	if (((ul_mck + (ul_baudrate * CAN_MAX_TQ_NUM - 1)) /
@@ -160,8 +159,8 @@ uint32_t CANRaw::init(uint32_t ul_baudrate)
 	if (m_pCan == CAN0) pmc_enable_periph_clk(ID_CAN0);
 	if (m_pCan == CAN1) pmc_enable_periph_clk(ID_CAN1);
 
-	m_Transceiver->DisableLowPower();
-	m_Transceiver->Enable();
+	Transceiver.DisableLowPower();
+	Transceiver.Enable();
 
 	/* Initialize the baudrate for CAN module. */
 	ul_flag = set_baudrate(ul_baudrate);
@@ -228,7 +227,8 @@ void CANRaw::setNumTXBoxes(int txboxes) {
 void CANRaw::enable()
 {
 	m_pCan->CAN_MR |= CAN_MR_CANEN;
-	m_Transceiver->Enable();
+	Transceiver.Enable();
+	Transceiver.DisableLowPower();
 }
 
 /**
@@ -239,8 +239,8 @@ void CANRaw::disable()
 {
 	m_pCan->CAN_MR &= ~CAN_MR_CANEN;
 
-	m_Transceiver->EnableLowPower();
-    m_Transceiver->Disable();
+	Transceiver.EnableLowPower();
+    Transceiver.Disable();
 
 }
 
@@ -251,6 +251,7 @@ void CANRaw::disable()
 void CANRaw::disable_low_power_mode()
 {
 	m_pCan->CAN_MR &= ~CAN_MR_LPM;
+	Transceiver.DisableLowPower();
 }
 
 /**
@@ -260,6 +261,7 @@ void CANRaw::disable_low_power_mode()
 void CANRaw::enable_low_power_mode()
 {
 	m_pCan->CAN_MR |= CAN_MR_LPM;
+	Transceiver.EnableLowPower();
 }
 
 /**
@@ -806,9 +808,8 @@ uint32_t CANRaw::mailbox_tx_frame(uint8_t uc_index)
 * \param Rs pin to use for transceiver Rs control
 * \param En pin to use for transceiver enable
 */
-CANRaw::CANRaw(Can* pCan, uint32_t Rs, uint32_t En ) {
+CANRaw::CANRaw(Can* pCan) {
 	m_pCan = pCan;
-	m_Transceiver = new SSN65HVD234(Rs, En);
 }
 
 /**
@@ -1000,17 +1001,24 @@ void CANRaw::mailbox_int_handler(uint8_t mb, uint32_t ul_status) {
 	}
 }
 
+// instantiate the two canbus adapters
 //Outside of object interrupt dispatcher. Needed because interrupt handlers can't really be members of a class
+
+#ifdef PINS_CAN0
+CANRaw CAN(CAN0);
+
 void CAN0_Handler(void)
 {
 	CAN.interruptHandler();
 }
+#endif
+
+#ifdef PINS_CAN1
+CANRaw CAN2(CAN1);
+
 void CAN1_Handler(void)
 {
 	CAN2.interruptHandler();
 }
-
-/// instantiate the two canbus adapters
-CANRaw CAN(CAN0, CAN0_RS, CAN0_EN);
-CANRaw CAN2(CAN1, CAN1_RS, CAN1_EN);
+#endif
 
