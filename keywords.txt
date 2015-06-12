@@ -1,7 +1,5 @@
 ###classes, datatypes, C++ keywords
-RX_CAN_FRAME	KEYWORD1
-TX_CAN_FRAME	KEYWORD1
-
+CAN_FRAME	KEYWORD1
 
 ###functions and methods
 set_baudrate	KEYWORD2
