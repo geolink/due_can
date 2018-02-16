@@ -1,5 +1,5 @@
-// Arduino Due - Displays all traffic found on either canbus port
-// By Thibaut Viard/Wilfredo Molina/Collin Kidder 2013-2014
+// Arduino Due - Attempts to automatically figure out bus speed for each bus then show the trafic on the buses
+// By Thibaut Viard/Wilfredo Molina/Collin Kidder 2013-2017
 
 // Required libraries
 #include "variant.h"
@@ -12,12 +12,13 @@
 
 void setup()
 {
-
+  delay(2000); //give some time for everything to come up (USB takes time)
   Serial.begin(115200);
   
-  // Initialize CAN0 and CAN1, Set the proper baud rates here
-  Can0.begin(CAN_BPS_250K);
-  Can1.begin(CAN_BPS_250K);
+  Serial.println("Doing Auto Baud scan on CAN0");
+  Can0.beginAutoSpeed();
+  Serial.println("Doing Auto Baud scan on CAN1");
+  Can1.beginAutoSpeed();
   
   //By default there are 7 mailboxes for each device that are RX boxes
   //This sets each mailbox to have an open filter that will accept extended
